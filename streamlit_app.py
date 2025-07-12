@@ -83,9 +83,12 @@ uploaded_files = st.file_uploader("📂 실험 엑셀 업로드 (분석용 데�
 if uploaded_files:
     df_list = []
     for f in uploaded_files:
-        df = pd.read_excel(f, sheet_name="분석용 데이터")
-        df['파일명'] = f.name
-        df_list.append(df)
+        try:
+            df = pd.read_excel(f, sheet_name="분석용 데이터")
+            df['파일명'] = f.name
+            df_list.append(df)
+        except ValueError:
+            st.error(f"❌ '{f.name}' 파일에서 '분석용 데이터' 시트를 찾을 수 없습니다.")
     merged_df = pd.concat(df_list, ignore_index=True)
     st.success("✅ 파일 업로드 및 병합 완료")
 
