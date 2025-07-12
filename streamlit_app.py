@@ -55,15 +55,16 @@ with col2:
     - 아래에서 실험 데이터를 업로드하고 분석을 시작하세요 ✨
     """)
 
-# AI 챗봇 응답 생성 함수
+# AI 챗봇 응답 생성 함수 (openai>=1.0.0 기준)
 @st.cache_resource(show_spinner=False)
 def get_chat_response(prompt):
     try:
-        response = openai.ChatCompletion.create(
+        client = openai.OpenAI()
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}]
         )
-        return response['choices'][0]['message']['content']
+        return response.choices[0].message.content
     except Exception as e:
         return f"⚠️ 에러 발생: {e}"
 
