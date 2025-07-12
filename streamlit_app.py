@@ -91,6 +91,10 @@ def generate_excel_with_two_sheets(experiment):
 
 # 제목
 st.title("🤖 머신러닝 분석기")
+st.markdown("""
+> 여러 개의 엑셀 데이터를 올릴 수 있어요! 날짜나 파일명을 기준으로 자동으로 병합되며,
+> 분석 결과는 하나로 통합해서 보여줘요 😊
+""")
 
 # 실험 유형 선택
 experiment = st.selectbox("🔬 실험 종류를 선택하세요", ["종이컵 비행기", "고리 비행기", "직접 업로드"])
@@ -101,15 +105,21 @@ towrite = generate_excel_with_two_sheets(experiment)
 st.download_button("📥 샘플 엑셀 양식 다운로드", data=towrite, file_name=file_name)
 
 # 엑셀 업로드
-uploaded_file = st.file_uploader("📂 실험 엑셀 업로드 (분석용 데이터 시트 포함)", type=["xlsx"])
+uploaded_files = st.file_uploader("📂 실험 엑셀 업로드 (여러 파일 가능, 분석용 데이터 시트 포함)", type=["xlsx"], accept_multiple_files=True)", type=["xlsx"])
 
-if not uploaded_file:
+if not uploaded_files:
     st.stop()
 
 try:
-    df = pd.read_excel(uploaded_file, sheet_name="분석용 데이터")
-    df.columns = df.columns.str.replace("\n", " ").str.strip()
-    df = df.select_dtypes(include=['number'])
+    df_list = []
+    for f in uploaded_files:
+        temp_df = pd.read_excel(f, sheet_name="분석용 데이터")
+        temp_df.columns = temp_df.columns.str.replace("
+", " ").str.strip()
+        temp_df = temp_df.select_dtypes(include=['number'])
+        temp_df['파일명'] = f.name  # 파일 구분용
+        df_list.append(temp_df)
+    df = pd.concat(df_list, ignore_index=True)
     issues = check_data_issues(df)
     if issues:
         st.warning("❗ 데이터 확인 필요:")
@@ -129,6 +139,17 @@ target_col = st.selectbox("🎯 예측할 종속변수", columns, index=columns.
 feature_cols = st.multiselect("🧪 독립변수(입력값)", [c for c in columns if c != target_col], default=[c for c in columns if c != target_col])
 
 st.sidebar.subheader("🧠 모델 설정")
+
+st.sidebar.markdown("""
+### 🤖 머신러닝이란?
+머신러닝은 **컴퓨터가 데이터에서 스스로 패턴을 찾고**, 그걸 바탕으로 **예측이나 판단을 하게 만드는 기술**이에요. 
+
+예를 들어,
+- 종이컵 비행기가 잘 날아간 이유가 **무게** 때문인지, **고리의 크기** 때문인지 찾아주는 거예요.
+- 새로운 조건에서도 얼마나 날 수 있을지 **예측**도 할 수 있어요!
+
+학생 여러분은 실험 데이터를 통해 **'이런 조건일 때 더 잘 날더라!'** 하는 **과학적 근거**를 찾을 수 있어요 ✨
+""")
 model_option = st.sidebar.selectbox("머신러닝 알고리즘 선택", ["선형회귀", "랜덤포레스트"])
 tuning = st.sidebar.checkbox("튜닝 사용", value=(model_option == "랜덤포레스트"))
 kfolds = st.sidebar.slider("K-Fold 수 (교차검증)", 2, 10, 5)
