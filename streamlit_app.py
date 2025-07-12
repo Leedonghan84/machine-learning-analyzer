@@ -33,7 +33,7 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 
 # 🧪 메인 소개 페이지
 st.set_page_config(layout="wide")
-st.title("📊 머신러닝 분석기")
+st.title("✈️ 비행기 실험 데이터 분석기")
 col1, col2 = st.columns([1, 4])
 
 with col1:
@@ -44,7 +44,7 @@ with col1:
     - 예) 고리 크기, 무게, 회전수 등을 통해 비행 성능을 예측해요.
     - 우리의 실험 데이터도 머신러닝으로 분석할 수 있어요!
 
-    ➡️ 아래에서 데이터를 업로드하고, 예측 모델을 설정해보세요!
+    🔽 아래에서 데이터를 업로드하고, 예측 모델을 설정해보세요!
     """)
 
 with col2:
@@ -125,7 +125,7 @@ if uploaded_files:
 
     # 예측 vs 실제
     st.subheader("📈 예측 vs 실제")
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6, 4))
     sns.regplot(x=y_pred, y=y_test, ax=ax)
     ax.set_xlabel("예측값")
     ax.set_ylabel("실제값")
@@ -140,14 +140,14 @@ if uploaded_files:
     else:
         importances = np.zeros(len(feature_cols))
     imp_df = pd.DataFrame({'변수': feature_cols, '중요도': importances})
-    fig2, ax2 = plt.subplots()
+    fig2, ax2 = plt.subplots(figsize=(6, 4))
     sns.barplot(data=imp_df.sort_values(by='중요도', ascending=False), x='중요도', y='변수', ax=ax2)
     st.pyplot(fig2)
 
     # 독립변수별 성능 관계
     st.subheader("📉 독립변수별 성능 관계")
     selected_feature = st.selectbox("🔍 분석할 변수 선택", feature_cols)
-    fig3, ax3 = plt.subplots()
+    fig3, ax3 = plt.subplots(figsize=(6, 4))
     sns.scatterplot(x=selected_feature, y=target_col, data=merged_df, ax=ax3)
     sns.regplot(x=selected_feature, y=target_col, data=merged_df, ax=ax3, scatter=False, line_kws={"color": "red"})
     st.pyplot(fig3)
