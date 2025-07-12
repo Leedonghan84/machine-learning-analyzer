@@ -31,24 +31,14 @@ else:
     matplotlib.rcParams['font.family'] = ['Malgun Gothic', 'AppleGothic', 'Arial']
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-# 잘못된 문자 제거 함수
-def remove_illegal_characters(s):
-    if isinstance(s, str):
-        return re.sub(r'[\x00-\x1F]', '', s)
-    return s
+# 🧪 메인 소개 페이지
+st.title("✈️ 비행기 실험 데이터 분석기")
+st.markdown("""
+**머신러닝을 활용한 실험 데이터 분석 앱입니다.**
 
-# 데이터 오류 검사 함수
-def check_data_issues(df):
-    messages = []
-    nulls = df.isnull().sum()
-    for col, cnt in nulls.items():
-        if cnt > 0:
-            messages.append(f"📌 `{col}` 컬럼에 결측치 {cnt}개가 있어요.")
-    if '비행성능' in df.columns:
-        outliers = df[(df['비행성능'] < 0) | (df['비행성능'] > 20)]
-        if not outliers.empty:
-            messages.append(f"🚨 비행성능 값이 0~20 범위를 벗어난 데이터가 {len(outliers)}개 있어요.")
-    return messages
+- 왼쪽 메뉴에서 알고리즘과 튜닝 조건을 조절할 수 있어요.
+- 아래에서 실험 데이터를 업로드하고 머신러닝 분석을 시작하세요 ✨
+""")
 
 # AI 챗봇 응답 생성 함수
 def get_chat_response(prompt):
@@ -69,4 +59,4 @@ with st.expander("🤖 AI에게 질문하기 (머신러닝 관련 도우미)"):
             answer = get_chat_response(user_prompt)
             st.markdown(f"📎 답변: {answer}")
 
-# 🔽 이하 기존 코드 유지 (생략됨)...
+# 🔽 이하 기존 코드 유지 (업로드, 분석 등 계속 연결)...
