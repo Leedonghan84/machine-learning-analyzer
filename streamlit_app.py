@@ -33,7 +33,7 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 
 # 🧪 메인 소개 페이지
 st.set_page_config(layout="wide")
-st.title("✈️ 비행기 실험 데이터 분석기")
+st.title("📊 머신러닝 분석기")
 col1, col2 = st.columns([1, 4])
 
 with col1:
@@ -56,6 +56,7 @@ with col2:
     """)
 
 # AI 챗봇 응답 생성 함수
+@st.cache_resource(show_spinner=False)
 def get_chat_response(prompt):
     try:
         response = openai.ChatCompletion.create(
@@ -77,7 +78,7 @@ with st.expander("🤖 AI에게 질문하기 (머신러닝 관련 도우미)"):
 # 실험 종류 선택 및 업로드
 experiment = st.selectbox("🔬 실험 종류를 선택하세요", ["종이컵 비행기", "고리 비행기", "직접 업로드"])
 file_name = f"{experiment}_샘플_양식.xlsx"
-st.download_button("📥 샘플 엑셀 양식 다운로드", data=b"", file_name=file_name)  # 예시용 빈 바이트
+st.download_button("📥 샘플 엑셀 양식 다운로드", data=b"", file_name=file_name)
 uploaded_files = st.file_uploader("📂 실험 엑셀 업로드 (분석용 데이터 시트 포함)", type=["xlsx"], accept_multiple_files=True)
 
 if uploaded_files:
@@ -118,9 +119,9 @@ if uploaded_files:
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
-    st.write(f"✅ 테스트 R²: {r2_score(y_test, y_pred):.2f} | RMSE: {mean_squared_error(y_test, y_pred) ** 0.5:.2f} | MAE: {mean_absolute_error(y_test, y_pred):.2f}")
+    st.success(f"✅ 테스트 R²: {r2_score(y_test, y_pred):.2f} | RMSE: {mean_squared_error(y_test, y_pred)**0.5:.2f} | MAE: {mean_absolute_error(y_test, y_pred):.2f}")
     cv_score = cross_val_score(model, X, y, cv=5, scoring='r2').mean()
-    st.write(f"🔁 교차검증 R² 평균: {cv_score:.2f}")
+    st.info(f"🔁 교차검증 R² 평균: {cv_score:.2f}")
 
     # 예측 vs 실제
     st.subheader("📈 예측 vs 실제")
@@ -142,6 +143,14 @@ if uploaded_files:
     fig2, ax2 = plt.subplots()
     sns.barplot(data=imp_df.sort_values(by='중요도', ascending=False), x='중요도', y='변수', ax=ax2)
     st.pyplot(fig2)
+
+    # 독립변수별 성능 관계
+    st.subheader("📉 독립변수별 성능 관계")
+    selected_feature = st.selectbox("🔍 분석할 변수 선택", feature_cols)
+    fig3, ax3 = plt.subplots()
+    sns.scatterplot(x=selected_feature, y=target_col, data=merged_df, ax=ax3)
+    sns.regplot(x=selected_feature, y=target_col, data=merged_df, ax=ax3, scatter=False, line_kws={"color": "red"})
+    st.pyplot(fig3)
 
     # 새 조건 입력 예측
     st.subheader("🧪 새 조건 입력 → 예측값")
