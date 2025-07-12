@@ -94,8 +94,12 @@ if uploaded_files:
 
     # 분석 대상 선택
     columns = merged_df.columns.tolist()
-    target_col = st.selectbox("🎯 예측할 종속변수", columns)
-    feature_cols = st.multiselect("🧪 독립변수(입력값)", [c for c in columns if c != target_col])
+    target_candidates = [c for c in columns if '성능' in c or '평균' in c or c.lower() in ['target', 'y']]
+    default_target = target_candidates[0] if target_candidates else columns[-1]
+
+    target_col = st.selectbox("🎯 예측할 종속변수", columns, index=columns.index(default_target))
+    default_features = [c for c in columns if c != target_col and pd.api.types.is_numeric_dtype(merged_df[c])]
+    feature_cols = st.multiselect("🧪 독립변수(입력값)", [c for c in columns if c != target_col], default=default_features)
 
     # 모델 선택 및 튜닝
     model_option = st.selectbox("모델 선택", ["선형회귀", "랜덤포레스트"])
@@ -114,11 +118,34 @@ if uploaded_files:
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
-    st.write(f"✅ R²: {r2_score(y_test, y_pred):.2f} / RMSE: {mean_squared_error(y_test, y_pred, squared=False):.2f} / MAE: {mean_absolute_error(y_test, y_pred):.2f}")
+    st.write(f"✅ 테스트 R²: {r2_score(y_test, y_pred):.2f} | RMSE: {mean_squared_error(y_test, y_pred) ** 0.5:.2f} | MAE: {mean_absolute_error(y_test, y_pred):.2f}")
+    cv_score = cross_val_score(model, X, y, cv=5, scoring='r2').mean()
+    st.write(f"🔁 교차검증 R² 평균: {cv_score:.2f}")
 
     # 예측 vs 실제
+    st.subheader("📈 예측 vs 실제")
     fig, ax = plt.subplots()
     sns.regplot(x=y_pred, y=y_test, ax=ax)
     ax.set_xlabel("예측값")
     ax.set_ylabel("실제값")
     st.pyplot(fig)
+
+    # 변수 중요도
+    st.subheader("📌 변수 중요도")
+    if hasattr(model, 'feature_importances_'):
+        importances = model.feature_importances_
+    elif hasattr(model, 'coef_'):
+        importances = np.abs(model.coef_)
+    else:
+        importances = np.zeros(len(feature_cols))
+    imp_df = pd.DataFrame({'변수': feature_cols, '중요도': importances})
+    fig2, ax2 = plt.subplots()
+    sns.barplot(data=imp_df.sort_values(by='중요도', ascending=False), x='중요도', y='변수', ax=ax2)
+    st.pyplot(fig2)
+
+    # 새 조건 입력 예측
+    st.subheader("🧪 새 조건 입력 → 예측값")
+    input_data = {col: st.number_input(f"{col}", value=float(merged_df[col].mean())) for col in feature_cols}
+    input_df = pd.DataFrame([input_data])
+    prediction = model.predict(input_df)[0]
+    st.success(f"📊 예측 결과: {prediction:.2f}")
