@@ -104,9 +104,10 @@ if uploaded_files:
         model = LinearRegression()
 
     # 모델 학습 및 결과
-    X = merged_df[feature_cols]
-    y = merged_df[target_col]
+    X = merged_df[feature_cols].select_dtypes(include=[np.number]).dropna()
+    y = merged_df.loc[X.index, target_col].astype(float)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
