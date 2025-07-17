@@ -17,8 +17,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 
-# 🔐 OpenAI API 키 설정
-openai.api_key = "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"
+# 🔐 OpenAI API 키 설정 (환경변수 방식 권장)
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # 한글 폰트 설정
 font_path = "./NanumGothic.ttf"
@@ -55,11 +55,10 @@ with col2:
     - 아래에서 실험 데이터를 업로드하고 분석을 시작하세요 ✨
     """)
 
-# AI 챗봇 응답 생성 함수 (openai>=1.0.0 기준)
+# AI 챗봇 응답 생성 함수
 @st.cache_resource(show_spinner=False)
 def get_chat_response(prompt):
     try:
-        client = openai.OpenAI()
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}]
